@@ -1,4 +1,5 @@
 const std = @import("std");
+const builtin = @import("builtin");
 const FNTFile = @import("File.zig").File;
 const FNTChar = @import("File.zig").Char;
 
@@ -167,16 +168,20 @@ pub fn parse(allocator: std.mem.Allocator, stream: *std.io.StreamSource) !FNTFil
     var data: FNTFile = .{};
     var reader = stream.reader();
     while (try reader.readUntilDelimiterOrEofAlloc(allocator, '\n', 2048)) |line| {
+        const l = switch (builtin.os.tag) {
+            .windows => line[0 .. line.len - 1],
+            else => line,
+        };
         if (std.mem.startsWith(u8, line, "info ")) {
-            try parseInfo(allocator, &data, line[5..]);
+            try parseInfo(allocator, &data, l[5..]);
         } else if (std.mem.startsWith(u8, line, "common ")) {
-            try parseCommon(allocator, &data, line[7..]);
+            try parseCommon(allocator, &data, l[7..]);
         } else if (std.mem.startsWith(u8, line, "page ")) {
-            try parsePage(allocator, &data, line[5..]);
+            try parsePage(allocator, &data, l[5..]);
         } else if (std.mem.startsWith(u8, line, "chars ")) {
-            try parseChars(allocator, &data, line[6..]);
+            try parseChars(allocator, &data, l[6..]);
         } else if (std.mem.startsWith(u8, line, "char ")) {
-            try parseChar(allocator, &data, line[5..]);
+            try parseChar(allocator, &data, l[5..]);
         } else {
             std.log.err("Unknown line: {s}\n", .{line});
         }

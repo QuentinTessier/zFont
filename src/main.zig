@@ -1,5 +1,5 @@
 const std = @import("std");
-const fnt = @import("FNT/fnt.zig");
+const Font = @import("font.zig");
 
 pub fn main() !void {
     var gpa = std.heap.GeneralPurposeAllocator(.{}){};
@@ -11,11 +11,9 @@ pub fn main() !void {
             else => std.log.warn("Allocator found leak", .{}),
         }
     }
-    var file = try std.fs.cwd().openFile("Unnamed.fnt", .{});
-    defer file.close();
 
-    var stream = std.io.StreamSource{ .file = file };
-    var res = try fnt.Parser.parse(allocator, &stream);
-    std.log.info("{}", .{res});
-    res.destroy(allocator);
+    var font = try Font.Font(void).init(allocator, "Unnamed.fnt");
+    defer font.deinit();
+
+    std.log.info("Glyph (A): {?}", .{font.getGlyph('A')});
 }
