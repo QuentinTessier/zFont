@@ -12,7 +12,7 @@ pub fn main() !void {
         }
     }
 
-    var font = try Font.Font(void).init(allocator, "Unnamed.fnt");
+    var font = try Font.Font(void).init(allocator, "assets/DefaultTest.fnt");
     defer font.deinit();
 
     std.log.info("Glyph (A): {?}", .{font.getGlyph('A')});

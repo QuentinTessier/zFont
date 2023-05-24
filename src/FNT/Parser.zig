@@ -168,10 +168,7 @@ pub fn parse(allocator: std.mem.Allocator, stream: *std.io.StreamSource) !FNTFil
     var data: FNTFile = .{};
     var reader = stream.reader();
     while (try reader.readUntilDelimiterOrEofAlloc(allocator, '\n', 2048)) |line| {
-        const l = switch (builtin.os.tag) {
-            .windows => line[0 .. line.len - 1],
-            else => line,
-        };
+        const l = if (line[line.len - 1] == '\r') line[0 .. line.len - 1] else line;
         if (std.mem.startsWith(u8, line, "info ")) {
             try parseInfo(allocator, &data, l[5..]);
         } else if (std.mem.startsWith(u8, line, "common ")) {
@@ -188,4 +185,37 @@ pub fn parse(allocator: std.mem.Allocator, stream: *std.io.StreamSource) !FNTFil
         allocator.free(line);
     }
     return data;
+}
+
+test "DefaultTest" {
+    const allocator = std.testing.allocator;
+
+    var file = try std.fs.cwd().openFile("assets/DefaultTest.fnt", .{});
+    var stream = std.io.StreamSource{ .file = file };
+
+    var data = try parse(allocator, &stream);
+
+    std.testing.expect(std.mem.eql(u8, data.face, "sans-serif"));
+    std.testing.expect(data.size == 72);
+    std.testing.expect(data.bold == false);
+    std.testing.expect(data.italic == false);
+    std.testing.expect(std.mem.eql(u8, data.face, ""));
+    std.testing.expect(data.unicode == true);
+    std.testing.expect(data.stretchH == 100);
+    std.testing.expect(data.smooth == true);
+    std.testing.expect(data.aa == 1);
+    std.testing.expect(std.mem.eql(u32, data.padding, [_]u32{ 1, 1, 1, 1 }));
+    std.testing.expect(std.mem.eql(u32, data.spacing, [_]u32{ 1, 1 }));
+
+    std.testing.expect(data.lineHeight == 72);
+    std.testing.expect(data.base == 56);
+    std.testing.expect(data.scaleW == 411);
+    std.testing.expect(data.scaleH == 415);
+    std.testing.expect(data.pages == 1);
+    std.testing.expect(data.packed_ == false);
+    std.testing.expect(std.mem.eql(u8, data.pageNames[0], "DefaultTest.png"));
+    std.testing.expect(data.charsCount == 91);
+    std.testing.expect(data.chars[0].id == 32);
+
+    data.destroy(allocator);
 }
