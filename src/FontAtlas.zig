@@ -6,6 +6,7 @@ pub const FontAtlas = @This();
 pub const Glyph = struct {
     region: @Vector(4, f32),
     offset: @Vector(2, f32),
+    size: @Vector(2, f32),
     advance: f32,
 };
 
@@ -25,12 +26,14 @@ pub fn deinit(self: *FontAtlas, allocator: std.mem.Allocator) void {
     allocator.free(self.atlasTexturePath);
 }
 
+// https://snowb.org/
 fn initFromFntFile(allocator: std.mem.Allocator, stream: *std.io.StreamSource) !FontAtlas {
     var content = try fnt.Parser.parse(allocator, stream);
     defer content.destroy(allocator);
 
     const atlasTextureSize: @Vector(2, f32) = .{ @intToFloat(f32, content.scaleW), @intToFloat(f32, content.scaleH) };
     var glyphs: std.AutoHashMapUnmanaged(u32, Glyph) = .{};
+    // TODO: Preallocate glyphs
     for (content.chars) |c| {
         const region = @Vector(4, f32){
             @intToFloat(f32, c.x) / atlasTextureSize[0],
@@ -42,8 +45,12 @@ fn initFromFntFile(allocator: std.mem.Allocator, stream: *std.io.StreamSource) !
             @intToFloat(f32, c.xoffset),
             @intToFloat(f32, c.yoffset),
         };
+        const size = @Vector(2, f32){
+            c.width,
+            c.height,
+        };
         const advance = @intToFloat(f32, c.xadvance);
-        try glyphs.put(allocator, c.id, .{ .region = region, .offset = offset, .advance = advance });
+        try glyphs.put(allocator, c.id, .{ .region = region, .offset = offset, .size = size, .advance = advance });
     }
     var name = try allocator.dupeZ(u8, content.pageNames[0]);
     return .{
