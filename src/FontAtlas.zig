@@ -31,7 +31,6 @@ fn initFromFntFile(allocator: std.mem.Allocator, stream: *std.io.StreamSource) !
 
     const atlasTextureSize: @Vector(2, f32) = .{ @intToFloat(f32, content.scaleW), @intToFloat(f32, content.scaleH) };
     var glyphs: std.AutoHashMapUnmanaged(u32, Glyph) = .{};
-    glyphs.ensureTotalCapacity(allocator, content.chars.len);
     for (content.chars) |c| {
         const region = @Vector(4, f32){
             @intToFloat(f32, c.x) / atlasTextureSize[0],
