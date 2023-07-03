@@ -10,7 +10,7 @@ pub const Glyph = struct {
 };
 
 glyphs: std.AutoHashMapUnmanaged(u32, Glyph) = .{},
-atlasTexturePath: []u8 = undefined,
+atlasTexturePath: [:0]u8 = undefined,
 
 pub fn init(allocator: std.mem.Allocator, path: []const u8) !FontAtlas {
     if (std.mem.endsWith(u8, path, ".fnt")) {
@@ -48,7 +48,7 @@ fn initFromFntFile(allocator: std.mem.Allocator, stream: *std.io.StreamSource) !
         const advance = @intToFloat(f32, c.xadvance);
         try glyphs.put(allocator, c.id, .{ .region = region, .offset = offset, .advance = advance });
     }
-    var name = try allocator.dupe(u8, content.pageNames[0]);
+    var name = try allocator.dupeZ(u8, content.pageNames[0]);
     return .{
         .glyphs = glyphs,
         .atlasTexturePath = name,
