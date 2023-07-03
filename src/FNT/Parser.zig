@@ -98,7 +98,7 @@ pub fn parsePage(allocator: std.mem.Allocator, data: *FNTFile, line: []const u8)
                 return error.InvalidToken;
             }
             var pageName = iterator.next() orelse unreachable;
-            data.pageNames[id] = try allocator.dupe(u8, pageName[1 .. pageName.len - 1]);
+            data.pageNames[id] = try allocator.dupe(u8, pageName[6 .. pageName.len - 1]);
         } else {
             std.log.warn("Found unsupported key {s} with value {s}", .{ key, value });
             return error.InvalidToken;
