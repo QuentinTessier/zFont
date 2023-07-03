@@ -13,13 +13,11 @@ glyphs: std.AutoHashMapUnmanaged(u32, Glyph) = .{},
 atlasTexturePath: [:0]u8 = undefined,
 
 pub fn init(allocator: std.mem.Allocator, path: []const u8) !FontAtlas {
-    if (std.mem.endsWith(u8, path, ".fnt")) {
-        var file = try std.fs.cwd().openFile(path, .{});
-        defer file.close();
+    var file = try std.fs.cwd().openFile(path, .{});
+    defer file.close();
 
-        var stream = std.io.StreamSource{ .file = file };
-        return initFromFntFile(allocator, &stream);
-    }
+    var stream = std.io.StreamSource{ .file = file };
+    return initFromFntFile(allocator, &stream);
 }
 
 pub fn deinit(self: *FontAtlas, allocator: std.mem.Allocator) void {
@@ -33,7 +31,7 @@ fn initFromFntFile(allocator: std.mem.Allocator, stream: *std.io.StreamSource) !
 
     const atlasTextureSize: @Vector(2, f32) = .{ @intToFloat(f32, content.scaleW), @intToFloat(f32, content.scaleH) };
     var glyphs: std.AutoHashMapUnmanaged(u32, Glyph) = .{};
-    glyphs.ensureTotalCapacity(allocator, content.charsCount);
+    glyphs.ensureTotalCapacity(allocator, content.chars.len);
     for (content.chars) |c| {
         const region = @Vector(4, f32){
             @intToFloat(f32, c.x) / atlasTextureSize[0],
