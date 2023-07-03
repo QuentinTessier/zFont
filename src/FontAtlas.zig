@@ -46,8 +46,8 @@ fn initFromFntFile(allocator: std.mem.Allocator, stream: *std.io.StreamSource) !
             @intToFloat(f32, c.yoffset),
         };
         const size = @Vector(2, f32){
-            c.width,
-            c.height,
+            @intToFloat(f32, c.width),
+            @intToFloat(f32, c.height),
         };
         const advance = @intToFloat(f32, c.xadvance);
         try glyphs.put(allocator, c.id, .{ .region = region, .offset = offset, .size = size, .advance = advance });
